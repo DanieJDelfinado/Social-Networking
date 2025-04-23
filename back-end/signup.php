@@ -30,7 +30,10 @@ require_once ('db.php');
         $stmt->bind_param("sss", $username, $email, $hashedPassword);
       
         if($stmt->execute()){
-            echo "User registered successfully.";
+           
+           header("Location: ../register.php?signup=success");
+           exit;
+           
         } else {
             echo "Error: " . $stmt->error;
         }

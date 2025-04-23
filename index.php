@@ -16,7 +16,7 @@
 
     <h3>Login</h3>
 <br><br>
-    <form action="POST">
+    <form action="back-end/login.php" method="POST">
 
           <input type="text" name="username" class="form-control" placeholder="Username" required><br>
           <input type="password" name="password" class="form-control" placeholder="Password" required><br>
