@@ -53,34 +53,72 @@ $username = $_SESSION['username'];
 
 <script>
 $(document).ready(function () {
-    function loadPosts() {
+    
+    loadPosts(); // Call it on page load
+
+});
+
+function loadPosts() {
         $.ajax({
             url: '../back-end/get_post.php',
             method: 'GET',
             dataType: 'json',
+         
             success: function (data) {
-                let html = '';
-                data.forEach(post => {
-                    html += `
-                        <div class="card mb-3">
-                            <div class="card-body" style="background-color:#d8d8d8;">
-                                <h6><strong>${post.username}</strong></h6>
-                                <p>${post.content}</p>
-                                <small class="text-muted">${post.created_at}</small>
-                            </div>
-                        </div>
-                    `;
-                });
-                $('#posts-container').html(html);
-            },
+    let html = '';
+    const currentUserId = <?php echo json_encode($_SESSION['user_id']); ?>;
+
+    data.forEach(post => {
+        html += `
+            <div class="card mb-3">
+                <div class="card-body" style="background-color:#d8d8d8;">
+                    <h6><strong>${post.username}</strong></h6>
+                    <p id="content-${post.id}">${post.content}</p>
+                    <small class="text-muted">${post.created_at}</small>
+        `;
+
+        if (post.user_id == currentUserId) {
+            html += `
+                <button class="btn btn-sm btn-warning mt-2" onclick="editPost(${post.id}, \`${post.content.replace(/`/g, '\\`')}\`)">Edit</button>
+            `;
+        }
+
+        html += `</div></div>`;
+    });
+
+    $('#posts-container').html(html);
+               },
+
             error: function () {
                 $('#posts-container').html('<p style="color: red;">Failed to load posts.</p>');
             }
         });
     }
 
-    loadPosts(); // Call it on page load
-});
+
+
+function editPost(postId, currentContent) {
+    const newContent = prompt("Edit your post:", currentContent);
+    if (newContent !== null) {
+        $.ajax({
+            url: '../back-end/edit_post.php',
+            method: 'POST',
+            data: {
+                post_id: postId,
+                content: newContent
+            },
+            success: function(response) {
+                alert(response.message);
+                loadPosts(); // reload posts after editing
+            },
+            error: function() {
+                alert("Failed to edit post.");
+            }
+        });
+    }
+}
+
+
 </script>
 
       
