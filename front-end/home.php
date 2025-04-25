@@ -67,6 +67,7 @@ function loadPosts() {
             success: function (data) {
     let html = '';
     const currentUserId = <?php echo json_encode($_SESSION['user_id']); ?>;
+    console.log('Current User ID:', currentUserId);
 
     data.forEach(post => {
         html += `
@@ -75,6 +76,9 @@ function loadPosts() {
                     <h6><strong>${post.username}</strong></h6>
                     <p id="content-${post.id}">${post.content}</p>
                     <small class="text-muted">${post.created_at}</small>
+                    <button class="btn btn-sm ${post.liked ? 'btn-danger' : 'btn-outline-danger'} mt-2" onclick="toggleLike(${post.id})">
+                ❤️ ${post.like_count}
+            </button>
         `;
 
         if (post.user_id == currentUserId) {
@@ -188,6 +192,25 @@ function deletePost(postId) {
                         text: 'Failed to delete post.',
                     });
                 }
+            });
+        }
+    });
+}
+
+
+function toggleLike(postId) {
+    $.ajax({
+        url: '../back-end/like_post.php',
+        method: 'POST',
+        data: { post_id: postId },
+        success: function(response) {
+            loadPosts(); // Refresh posts
+        },
+        error: function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Failed to toggle like.',
             });
         }
     });
