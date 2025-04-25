@@ -83,6 +83,13 @@ function loadPosts() {
             `;
         }
 
+        if (post.user_id == currentUserId) {
+    html += `
+       
+        <button class="btn btn-sm btn-danger mt-2" onclick="deletePost(${post.id})">Delete</button>
+    `;
+}
+
         html += `</div></div>`;
     });
 
@@ -97,26 +104,96 @@ function loadPosts() {
 
 
 
-function editPost(postId, currentContent) {
-    const newContent = prompt("Edit your post:", currentContent);
-    if (newContent !== null) {
-        $.ajax({
-            url: '../back-end/edit_post.php',
-            method: 'POST',
-            data: {
-                post_id: postId,
-                content: newContent
-            },
-            success: function(response) {
-                alert(response.message);
-                loadPosts(); // reload posts after editing
-            },
-            error: function() {
-                alert("Failed to edit post.");
+    function editPost(postId, currentContent) {
+    Swal.fire({
+        title: 'Edit your post',
+        input: 'textarea',
+        inputLabel: 'Update your message below:',
+        inputValue: currentContent,
+        showCancelButton: true,
+        confirmButtonText: 'Save',
+        cancelButtonText: 'Cancel',
+        inputAttributes: {
+            'aria-label': 'Type your message here'
+        },
+        preConfirm: (newContent) => {
+            if (!newContent) {
+                Swal.showValidationMessage('Post content cannot be empty.');
             }
-        });
-    }
+            return newContent;
+        }
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '../back-end/edit_post.php',
+                method: 'POST',
+                data: {
+                    post_id: postId,
+                    content: result.value
+                },
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Updated!',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    loadPosts();
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Failed to update post.',
+                    });
+                }
+            });
+        }
+    });
 }
+
+
+function deletePost(postId) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "This post will be permanently deleted!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '../back-end/delete_post.php',
+                method: 'POST',
+                data: {
+                    post_id: postId
+                },
+                success: function(response) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: response.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    loadPosts();
+                },
+                error: function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Failed to delete post.',
+                    });
+                }
+            });
+        }
+    });
+}
+
+
 
 
 </script>
